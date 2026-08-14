@@ -1,6 +1,13 @@
 <?xml version="1.0"?>
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+    <xacro:include filename="$(find  glionbot_description)/urdf/glionbot/common_inertia.xacro" />
     <xacro:macro name="laser_xacro" params="xyz">
+        <gazebo reference="laser_cylinder_link">
+            <material>Gazebo/Black</material>
+        </gazebo>
+        <gazebo reference="laser_link">
+            <material>Gazebo/Black</material>
+        </gazebo>
         <!-- 雷达支撑杆-->
         <link name="laser_cylinder_link">
             <visual>
@@ -21,6 +28,7 @@
                     <color rgba="0.0 1.0 0.0 0.8" />
                 </material>
             </collision>
+            <xacro:cylinder_inertia m="0.5" r="0.01" h="0.10" />
         </link>
 
         <joint name="laser_cylinder_joint" type="fixed">
@@ -48,6 +56,7 @@
                     <color rgba="0.0 1.0 0.0 0.8" />
                 </material>
             </collision>
+            <xacro:cylinder_inertia m="0.5" r="0.02" h="0.02" />
         </link>
         <joint name="laser_joint" type="fixed">
             <parent link="laser_cylinder_link" />

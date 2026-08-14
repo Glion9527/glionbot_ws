@@ -1,11 +1,12 @@
 <?xml version="1.0"?>
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro">
-    <xacro:macro name="imu_xacro" params="xyz">
+    <xacro:include filename="$(find  glionbot_description)/urdf/glionbot/common_inertia.xacro" />
+    <xacro:macro name="imu_xacro" params="xyz m w h d">
         <link name="imu_link">
             <visual>
                 <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
                 <geometry>
-                    <box size="0.02 0.02 0.02"/>
+                    <box size="${w} ${h} ${d}"/>
                 </geometry>
                 <material name="black">
                     <color rgba="0.0 0.0 0.0 0.8"/>
@@ -14,12 +15,13 @@
             <collision>
                 <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
                 <geometry>
-                    <box size="0.02 0.02 0.02"/>
+                    <box size="${w} ${h} ${d}"/>
                 </geometry>
                 <material name="black">
                     <color rgba="0.0 0.0 0.0 0.8"/>
                 </material>
             </collision>
+            <xacro:box_inertia m="${m}" w="${h}" h="${h}" d="${d}" />
         </link>
         <joint name="imu_joint" type="fixed">
             <parent link="base_link"/>

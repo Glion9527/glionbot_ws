@@ -1,31 +1,33 @@
 <?xml version="1.0"?>
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro">
-    <xacro:macro name="camera_xacro" params="xyz">
+    <xacro:include filename="$(find  glionbot_description)/urdf/glionbot/common_inertia.xacro" />
+    <xacro:macro name="camera_xacro" params="xyz m w h d">
         <!-- 相机模块-->
-         <link name="camera_link">
+        <link name="camera_link">
             <visual>
-                <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
+                <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0" />
                 <geometry>
-                    <box size="0.02 0.10 0.02"/>
+                    <box size="${w} ${h} ${d}" />
                 </geometry>
                 <material name="green">
-                    <color rgba="0.0 1.0 0.0 0.8"/>
+                    <color rgba="0.0 1.0 0.0 0.8" />
                 </material>
             </visual>
             <collision>
-                <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
+                <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0" />
                 <geometry>
-                    <box size="0.02 0.10 0.02"/>
+                    <box size="${w} ${h} ${d}" />
                 </geometry>
                 <material name="green">
-                    <color rgba="0.0 1.0 0.0 0.8"/>
+                    <color rgba="0.0 1.0 0.0 0.8" />
                 </material>
             </collision>
-         </link>
-         <joint name="camera_joint" type="fixed">
-            <parent link="base_link"/>
-            <child link="camera_link"/>
-            <origin xyz="${xyz}"/>
-         </joint>
+            <xacro:box_inertia m="${m}" w="${h}" h="${h}" d="${d}" />
+        </link>
+        <joint name="camera_joint" type="fixed">
+            <parent link="base_link" />
+            <child link="camera_link" />
+            <origin xyz="${xyz}" />
+        </joint>
     </xacro:macro>
 </robot>

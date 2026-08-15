@@ -32,16 +32,16 @@ def generate_launch_description():
     # 获取默认路径
     robot_name_in_model = "glionbot"
     urdf_tutorial_path = get_package_share_directory("glionbot_description")
-    defaule_model_path = os.path.join(
+    default_model_path = os.path.join(
         urdf_tutorial_path, "urdf", "glionbot", "glionbot.urdf.xacro"
     )
-    defaule_world_path = os.path.join(
+    default_world_path = os.path.join(
         urdf_tutorial_path, "world", "turtlebot3_world.world"
     )
     # 为launch声明参数
     action_declare_arg_mode_path = DeclareLaunchArgument(
         name="model",
-        default_value=str(defaule_model_path),
+        default_value=str(default_model_path),
         description="URDF的绝对路径",
     )
     # 获取文件内容生成新的参数
@@ -56,50 +56,48 @@ def generate_launch_description():
         parameters=[{"robot_description": robot_description}],
     )
 
-    # 通过 IncludeLaunchDescription 包含另外一个launch文件
+    # 1. 通过 IncludeLaunchDescription 包含 Gazebo Harmonic 的启动文件
     launch_gazebo = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
-            PathJoinSubstitution(
-                [FindPackageShare("ros_gz_sim"), "launch", "gz_sim.launch.py"]
-            )
+            [get_package_share_directory("ros_gz_sim"), "/launch", "/gz_sim.launch.py"]
         ),
-        launch_arguments={
-            "gz_args": defaule_world_path,
-            "on_exit_shutdown": "true",
-        }.items(),
+        # Gazebo Harmonic 使用 gz_args 来传递参数
+        # -r 表示启动后直接运行（不暂停）
+        # -v 4 表示输出详细的 verbose 级别日志
+        launch_arguments={"gz_args": ["-r -v 4 ", default_world_path]}.items(),
     )
-    # 请求 Gazebo 加载机器人
-    spawn_entity_node = ExecuteProcess(
-        cmd=[
-            "ros2",
-            "run",
-            "ros_gz_sim",
-            "create",
+
+    # 2. 请求 Gazebo Harmonic 加载机器人
+    spawn_entity_node = Node(
+        package="ros_gz_sim",
+        executable="create",  # 在 Harmonic 中，加载实体的可执行文件名为 create
+        arguments=[
             "-topic",
             "/robot_description",
             "-name",
-            robot_name_in_model,
-            "-x",
-            "-2.0",
-            "-y",
-            "0.0",
-            "-z",
-            "0.0",
+            robot_name_in_model,  # Harmonic 中指定实体名称的参数是 -name
         ],
         output="screen",
     )
 
-    # 启动 ROS-Gazebo 桥接器
+    # 3. 启动 ros_gz_bridge，桥接 ROS 2 和 Gazebo 之间的话题
     bridge_node = Node(
         package="ros_gz_bridge",
         executable="parameter_bridge",
         arguments=[
-            # 双向桥接 cmd_vel (ROS -> GZ)
-            # "/cmd_vel@geometry_msgs/msg/Twist@gz.msgs.Twist",
-            "/model/glionbot/cmd_vel@geometry_msgs/msg/Twist@gz.msgs.Twist",
-            # 双向桥接 odom (GZ -> ROS)
-            # "/odom@nav_msgs/msg/Odometry@gz.msgs.Odometry",
-            "/model/glionbot/odom@nav_msgs/msg/Odometry@gz.msgs.Odometry",
+            # 语法规则: /话题名称@ROS2_消息类型[Gazebo_消息类型  (或者 ] 表示方向)
+            # 1. 桥接时钟 (Gazebo -> ROS 2) - 必不可少！让 ROS 2 节点使用仿真时间
+            "/clock@rosgraph_msgs/msg/Clock[gz.msgs.Clock",
+            # 2. 桥接控制指令 (ROS 2 -> Gazebo) - 假设你的插件监听此话题
+            "/cmd_vel@geometry_msgs/msg/Twist]gz.msgs.Twist",
+            # 3. 桥接里程计 (Gazebo -> ROS 2)
+            "/odom@nav_msgs/msg/Odometry[gz.msgs.Odometry",
+            # 4. 桥接关节状态 (Gazebo -> ROS 2)
+            "/joint_states@sensor_msgs/msg/JointState[gz.msgs.Model",
+            # 5. 桥接 TF 树 (Gazebo -> ROS 2)
+            "/tf@tf2_msgs/msg/TFMessage[gz.msgs.Pose_V",
+            # 6. 桥接激光雷达传感器 (Gazebo -> ROS 2)
+            "/scan@sensor_msgs/msg/LaserScan[gz.msgs.LaserScan",
         ],
         output="screen",
     )

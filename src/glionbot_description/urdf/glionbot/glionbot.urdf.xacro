@@ -25,4 +25,7 @@
     <xacro:include
         filename="$(find glionbot_description)/urdf/glionbot/plugins/gazebo_sensor_plugin.xacro" />
     <xacro:gazebo_sensor_plugin />
+    <!-- 1. 引入硬件接口 -->
+    <xacro:include filename="$(find glionbot_description)/urdf/glionbot/glionbot.ros2_control.xacro" />
+    <xacro:glionbot_ros2_control />
 </robot>

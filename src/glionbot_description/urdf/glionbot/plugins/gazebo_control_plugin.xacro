@@ -3,41 +3,18 @@
     <xacro:macro name="gazebo_control_plugin">
         <gazebo>
             <!-- 1. 差速驱动插件 -->
-            <plugin filename="gz-sim-diff-drive-system" name="gz::sim::systems::DiffDrive">
-                <!-- 频率 -->
-                <odom_publish_frequency>30</odom_publish_frequency>
-                
-                <!-- 车轮关节 (需与URDF中的关节命名完全一致) -->
-                <left_joint>left_wheel_joint</left_joint>
-                <right_joint>right_wheel_joint</right_joint>
-                
-                <!-- 运动学参数 -->
-                <wheel_separation>0.2</wheel_separation>
-                <wheel_radius>0.064</wheel_radius>
-                
-                <!-- 动力学限制 (Harmonic 中标签有所改变) -->
-                <max_linear_acceleration>1.0</max_linear_acceleration>
-                <max_angular_acceleration>2.0</max_angular_acceleration>
-                
-                <!-- 话题名称：强烈建议前面加上 "/" 变为绝对路径！
-                     如果不加 "/"，Gazebo 默认会发布在 /model/你的机器人名字/cmd_vel 下，
-                     这会增加你在 ros_gz_bridge 配置时的麻烦。 -->
-                <topic>/cmd_vel</topic>
-                <odom_topic>/odom</odom_topic>
-                <tf_topic>/tf</tf_topic>
-                
-                <!-- 坐标系名称 -->
-                <frame_id>odom</frame_id>
-                <child_frame_id>base_footprint</child_frame_id>
-            </plugin>
-
-            <!-- 2. 关节状态发布插件 (重要补充！) -->
-            <!-- 在 Harmonic 中，DiffDrive 插件不再“包办一切”。
-                 如果你想让 ROS 2 的 RViz 里看到轮子转动，必须添加这个插件来发布车轮的 joint_states -->
-            <plugin filename="gz-sim-joint-state-publisher-system" name="gz::sim::systems::JointStatePublisher">
-                <topic>/joint_states</topic>
-                <joint_name>left_wheel_joint</joint_name>
-                <joint_name>right_wheel_joint</joint_name>
+            <!-- 引入 gz_ros2_control 插件，替代原来的 DiffDrive 插件 -->
+            <plugin filename="gz_ros2_control-system"
+                name="gz_ros2_control::GazeboSimROS2ControlPlugin">
+                <!-- 告诉 Gazebo：控制器的参数写在这个 YAML 文件里 -->
+                <parameters>$(find glionbot_description)/config/glionbot_ros2_controller.yaml</parameters>
+                <!-- 在这里完成话题的重映射！ -->
+                <ros>
+                    <!-- 将控制器默认接收的命令话题，重映射为全局的 /cmd_vel -->
+                    <remapping>/glionbot_base_controller/cmd_vel:=/cmd_vel</remapping>
+                    <!-- 将控制器默认发布的里程计话题，重映射为全局的 /odom -->
+                    <remapping>/glionbot_base_controller/odom:=/odom</remapping>
+                </ros>
             </plugin>
         </gazebo>
     </xacro:macro>

@@ -3,11 +3,12 @@ from launch_ros.actions import Node
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from ament_index_python.packages import get_package_share_directory
 import os
-from launch.actions import DeclareLaunchArgument, ExecuteProcess
+from launch.actions import DeclareLaunchArgument, ExecuteProcess, RegisterEventHandler
 from launch_ros.parameter_descriptions import ParameterValue
 from launch.substitutions import Command, LaunchConfiguration, PathJoinSubstitution
 from launch.actions import IncludeLaunchDescription
 from launch_ros.substitutions import FindPackageShare
+from launch.event_handlers import OnProcessExit
 
 # 封装终端指令相关类--------------
 # from launch.actions import ExecuteProcess
@@ -114,6 +115,40 @@ def generate_launch_description():
         output="screen",
     )
 
+    # 1. 孵化关节状态广播器
+    load_joint_state_broadcaster = Node(
+        package="controller_manager",
+        executable="spawner",
+        arguments=["joint_state_broadcaster"],
+        output="screen",
+    )
+
+    # 2. 孵化差速驱动控制器 (名字必须和 YAML 里写的一致)
+    load_glionbot_base_controller = Node(
+        package="controller_manager",
+        executable="spawner",
+        arguments=["glionbot_base_controller"],
+        output="screen",
+    )
+
+    # ==================== 新增：配置启动顺序 (非常重要) ====================
+
+    # 动作 1：监听 spawn_entity_node，等它加载完机器人并退出后，再启动状态广播器
+    delay_joint_state_broadcaster_after_spawn = RegisterEventHandler(
+        event_handler=OnProcessExit(
+            target_action=spawn_entity_node,
+            on_exit=[load_joint_state_broadcaster],
+        )
+    )
+
+    # 动作 2：等状态广播器启动成功后，再启动差速驱动控制器
+    delay_base_controller_after_joint_state_broadcaster = RegisterEventHandler(
+        event_handler=OnProcessExit(
+            target_action=load_joint_state_broadcaster,
+            on_exit=[load_glionbot_base_controller],
+        )
+    )
+
     return LaunchDescription(
         [
             action_declare_arg_mode_path,
@@ -122,5 +157,7 @@ def generate_launch_description():
             spawn_entity_node,
             camera_image_bridge,
             bridge_node,
+            delay_joint_state_broadcaster_after_spawn,
+            delay_base_controller_after_joint_state_broadcaster,
         ]
     )

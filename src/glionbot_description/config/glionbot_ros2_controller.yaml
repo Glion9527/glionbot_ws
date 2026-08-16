@@ -1,0 +1,57 @@
+# 1. 大管家配置：负责调度所有的控制器
+controller_manager:
+  ros__parameters:
+    update_rate: 30       # 对应你之前的 <odom_publish_frequency>30</odom_publish_frequency>
+    use_sim_time: true    # 仿真环境下必须为 true，让控制器使用 Gazebo 的时间
+
+    # 声明要加载的两个控制器及其类型
+    joint_state_broadcaster:
+      type: joint_state_broadcaster/JointStateBroadcaster
+
+    glionbot_base_controller:
+      type: diff_drive_controller/DiffDriveController
+
+# 2. 关节状态广播器配置（替代了原来 Gazebo 里的 JointStatePublisher 插件）
+joint_state_broadcaster:
+  ros__parameters:
+    use_sim_time: true
+
+# 3. 差速驱动控制器配置（替代了原来 Gazebo 里的 DiffDrive 插件）
+glionbot_base_controller:
+  ros__parameters:
+    use_sim_time: true
+    
+    # 车轮关节名称 (必须数组格式，可以支持4轮/6轮，这里是两轮)
+    left_wheel_names: ["left_wheel_joint"]
+    right_wheel_names: ["right_wheel_joint"]
+
+    # 运动学参数 (把你之前的参数搬到这里)
+    wheel_separation: 0.2
+    wheel_radius: 0.064
+    
+    # 坐标系设置
+    odom_frame_id: odom
+    base_frame_id: base_footprint
+    
+    # 话题发布设置
+    publish_rate: 30.0
+    open_loop: false            # false 表示基于轮子实际转速算里程计；true 表示直接用下发指令算
+    enable_odom_tf: true        # 对应之前的 tf_topic，自动发布 odom -> base_footprint 的 TF 树
+    
+    # 消息类型兼容
+    # 设为 false 表示接收标准的 geometry_msgs/Twist (teleop_twist_keyboard 的默认格式)
+    use_stamped_vel: false      
+
+    # 动力学限制 (搬运并细化你之前的加速限制)
+    linear:
+      x:
+        has_velocity_limits: true
+        max_velocity: 1.0       # 最大线速度 (m/s)
+        has_acceleration_limits: true
+        max_acceleration: 1.0   # 最大线加速度 (对应你之前的 <max_linear_acceleration>)
+    angular:
+      z:
+        has_velocity_limits: true
+        max_velocity: 2.0       # 最大角速度 (rad/s)
+        has_acceleration_limits: true
+        max_acceleration: 2.0   # 最大角加速度 (对应你之前的 <max_angular_acceleration>)

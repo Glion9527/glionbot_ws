@@ -1,0 +1,156 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+    <xacro:macro name="gazebo_sensor_plugin">
+        <gazebo reference="laser_link">
+            <!-- 变化1：建议将 type="ray" 改为 type="gpu_lidar" 以利用显卡加速，大幅提升性能 -->
+            <sensor name="laserscan" type="gpu_lidar">
+                <!-- 变化2：直接去掉原有的 <plugin> 标签块 -->
+
+                <always_on>true</always_on>
+                <visualize>true</visualize>
+                <update_rate>5</update_rate>
+                <pose>0 0 0 0 0 0</pose>
+
+                <!-- 变化3：直接在 sensor 标签下指定 Gazebo 话题名（建议用绝对路径） -->
+                <topic>/scan</topic>
+
+                <!-- 变化4：这是 Harmonic 中非常重要的一句！告诉 Gazebo 这条数据属于哪个 TF 坐标系。
+                     如果不加这个，传到 ROS 2 里 Header 的 frame_id 会是空的，导致 RViz 报错 -->
+                <gz_frame_id>laser_link</gz_frame_id>
+
+                <ray>
+                    <scan>
+                        <horizontal>
+                            <samples>360</samples>
+                            <resolution>1.000000</resolution>
+                            <min_angle>0.000000</min_angle>
+                            <max_angle>6.280000</max_angle>
+                        </horizontal>
+                    </scan>
+                    <range>
+                        <min>0.120000</min>
+                        <max>8.0</max>
+                        <resolution>0.015000</resolution>
+                    </range>
+                    <noise>
+                        <type>gaussian</type>
+                        <mean>0.0</mean>
+                        <stddev>0.01</stddev>
+                    </noise>
+                </ray>
+            </sensor>
+        </gazebo>
+        <gazebo reference="imu_link">
+            <sensor name="imu_sensor" type="imu">
+                <!-- 1. 彻底删除了 libgazebo_ros_imu_sensor.so 插件块 -->
+
+                <always_on>true</always_on>
+                <update_rate>100</update_rate>
+                <visualize>true</visualize>
+
+                <!-- 2. 新增：指定 Gazebo 内部的话题名称 -->
+                <topic>/imu</topic>
+
+                <!-- 3. 新增：必须指定 frame_id，否则传到 ROS 2 时会缺失坐标系信息 -->
+                <gz_frame_id>imu_link</gz_frame_id>
+
+                <!-- 4. 六轴噪声设置完全保留原样，这是纯物理参数 -->
+                <imu>
+                    <angular_velocity>
+                        <x>
+                            <noise type="gaussian">
+                                <mean>0.0</mean>
+                                <stddev>2e-4</stddev>
+                                <bias_mean>0.0000075</bias_mean>
+                                <bias_stddev>0.0000008</bias_stddev>
+                            </noise>
+                        </x>
+                        <y>
+                            <noise type="gaussian">
+                                <mean>0.0</mean>
+                                <stddev>2e-4</stddev>
+                                <bias_mean>0.0000075</bias_mean>
+                                <bias_stddev>0.0000008</bias_stddev>
+                            </noise>
+                        </y>
+                        <z>
+                            <noise type="gaussian">
+                                <mean>0.0</mean>
+                                <stddev>2e-4</stddev>
+                                <bias_mean>0.0000075</bias_mean>
+                                <bias_stddev>0.0000008</bias_stddev>
+                            </noise>
+                        </z>
+                    </angular_velocity>
+                    <linear_acceleration>
+                        <x>
+                            <noise type="gaussian">
+                                <mean>0.0</mean>
+                                <stddev>1.7e-2</stddev>
+                                <bias_mean>0.1</bias_mean>
+                                <bias_stddev>0.001</bias_stddev>
+                            </noise>
+                        </x>
+                        <y>
+                            <noise type="gaussian">
+                                <mean>0.0</mean>
+                                <stddev>1.7e-2</stddev>
+                                <bias_mean>0.1</bias_mean>
+                                <bias_stddev>0.001</bias_stddev>
+                            </noise>
+                        </y>
+                        <z>
+                            <noise type="gaussian">
+                                <mean>0.0</mean>
+                                <stddev>1.7e-2</stddev>
+                                <bias_mean>0.1</bias_mean>
+                                <bias_stddev>0.001</bias_stddev>
+                            </noise>
+                        </z>
+                    </linear_acceleration>
+                </imu>
+            </sensor>
+        </gazebo>
+        <gazebo reference="camera_link">
+            <!-- 变化1：type="depth" 在新版中更标准的写法是 type="depth_camera" -->
+            <sensor name="camera_sensor" type="depth_camera">
+                <!-- 删除了原有的 libgazebo_ros_camera.so 插件 -->
+
+                <always_on>true</always_on>
+                <update_rate>10</update_rate>
+                <!-- 建议加上 visualize，可以在 Gazebo 界面里看到相机的视场角线条 -->
+                <visualize>true</visualize>
+
+                <!-- 变化2：指定 Gazebo 内部的话题名称 -->
+                <!-- 注意：深度相机会自动在加上后缀生成图像、深度图、点云和相机信息，
+                     比如：/camera/image, /camera/depth_image, /camera/points, /camera/camera_info -->
+                <topic>/camera</topic>
+
+                <!-- 变化3：极其重要！必须填入 camera_optical_link -->
+                <gz_frame_id>camera_optical_link</gz_frame_id>
+
+                <camera name="camera">
+                    <horizontal_fov>1.5009831567</horizontal_fov>
+                    <image>
+                        <width>800</width>
+                        <height>600</height>
+                        <format>R8G8B8</format>
+                    </image>
+                    <!-- 建议为深度相机加上 clip (裁剪距离)，告诉它能看多近、多远 -->
+                    <clip>
+                        <near>0.05</near>
+                        <far>10.0</far>
+                    </clip>
+                    <distortion>
+                        <k1>0.0</k1>
+                        <k2>0.0</k2>
+                        <k3>0.0</k3>
+                        <p1>0.0</p1>
+                        <p2>0.0</p2>
+                        <center>0.5 0.5</center>
+                    </distortion>
+                </camera>
+            </sensor>
+        </gazebo>
+    </xacro:macro>
+</robot>

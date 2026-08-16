@@ -80,6 +80,13 @@ def generate_launch_description():
         output="screen",
     )
 
+    camera_image_bridge = Node(
+        package="ros_gz_image",
+        executable="image_bridge",
+        arguments=["/camera/image", "/camera/depth_image"],  # 彩色图像  # 深度图像
+        output="screen",
+    )
+
     # 3. 启动 ros_gz_bridge，桥接 ROS 2 和 Gazebo 之间的话题
     bridge_node = Node(
         package="ros_gz_bridge",
@@ -98,6 +105,11 @@ def generate_launch_description():
             "/tf@tf2_msgs/msg/TFMessage[gz.msgs.Pose_V",
             # 6. 桥接激光雷达传感器 (Gazebo -> ROS 2)
             "/scan@sensor_msgs/msg/LaserScan[gz.msgs.LaserScan",
+            "/imu@sensor_msgs/msg/Imu[gz.msgs.IMU",
+            # 桥接点云 (如果你需要三维建图)
+            "/camera/points@sensor_msgs/msg/PointCloud2[gz.msgs.PointCloudPacked",
+            # 桥接相机内参信息 (RViz 显示图像时必须要有)
+            "/camera/camera_info@sensor_msgs/msg/CameraInfo[gz.msgs.CameraInfo",
         ],
         output="screen",
     )
@@ -108,6 +120,7 @@ def generate_launch_description():
             robot_state_publisher_node,
             launch_gazebo,
             spawn_entity_node,
+            camera_image_bridge,
             bridge_node,
         ]
     )

@@ -22,4 +22,7 @@
     <xacro:include
         filename="$(find glionbot_description)/urdf/glionbot/plugins/gazebo_control_plugin.xacro" />
     <xacro:gazebo_control_plugin />
+    <xacro:include
+        filename="$(find glionbot_description)/urdf/glionbot/plugins/gazebo_sensor_plugin.xacro" />
+    <xacro:gazebo_sensor_plugin />
 </robot>

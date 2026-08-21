@@ -1,0 +1,28 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="t1bot">
+    <xacro:include filename="$(find test_ros2_control)/urdf/t1bot.xacro" />
+    <!-- gz_ros2_control-->
+    <link name="world" />
+    <joint name="world_joint" type="fixed">
+        <parent link="world" />
+        <child link="base_link" />
+    </joint>
+    <gazebo>
+        <plugin filename="gz_ros2_control-system" name="gz_ros2_control::GazeboSimROS2ControlPlugin">
+            <parameters>$(find test_ros2_control)/config/velocity_control.yaml</parameters>
+        </plugin>
+    </gazebo>
+
+    <ros2_control name="T1System" type="system">
+        <hardware>
+            <!-- <plugin>mock_components/GenericSystem</plugin> -->
+            <!-- <param name="calculate_dynamics">true</param> -->
+            <plugin>gz_ros2_control/GazeboSimSystem</plugin>
+        </hardware>
+        <joint name="joint1">
+            <command_interface name="velocity" />
+            <state_interface name="position" />
+            <state_interface name="velocity" />
+        </joint>
+    </ros2_control>
+</robot>

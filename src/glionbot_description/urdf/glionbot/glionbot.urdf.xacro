@@ -1,14 +1,14 @@
 <?xml version="1.0"?>
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="glionbot">
     <xacro:include filename="$(find glionbot_description)/urdf/glionbot/base.urdf.xacro" />
+    <xacro:base_xacro length="0.12" radius="0.1" />
     <!-- 传感器组件-->
     <xacro:include filename="$(find glionbot_description)/urdf/glionbot/sensor/imu.urdf.xacro" />
     <xacro:include filename="$(find glionbot_description)/urdf/glionbot/sensor/laser.urdf.xacro" />
+    <xacro:include filename="$(find glionbot_description)/urdf/glionbot/sensor/camera.urdf.xacro" />
     <!-- 执行器组件-->
     <xacro:include filename="$(find glionbot_description)/urdf/glionbot/actuator/wheel.urdf.xacro" />
     <xacro:include filename="$(find glionbot_description)/urdf/glionbot/actuator/caster.urdf.xacro" />
-    <xacro:include filename="$(find glionbot_description)/urdf/glionbot/sensor/camera.urdf.xacro" />
-    <xacro:base_xacro length="0.12" radius="0.1" />
     <!-- 传感器-->
     <xacro:imu_xacro xyz="0.0 0.0 0.02" m="0.5" w="0.02" h="0.02" d="0.02" />
     <xacro:laser_xacro xyz="0.0 0.0 0.10" />

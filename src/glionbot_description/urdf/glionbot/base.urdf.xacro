@@ -19,6 +19,7 @@
                     <color rgba="1.0 1.0 1.0 0.5" />
                 </material>
             </visual>
+            <!-- 碰撞属性-->
             <collision>
                 <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0" />
                 <geometry>
@@ -28,6 +29,7 @@
                     <color rgba="1.0 1.0 1.0 0.5" />
                 </material>
             </collision>
+            <!-- 质量惯性矩阵-->
             <xacro:cylinder_inertia m="1.0" r="${radius}" h="${length}" />
         </link>
     </xacro:macro>

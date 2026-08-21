@@ -19,7 +19,8 @@ joint_state_broadcaster:
 # 3. 差速驱动控制器配置（替代了原来 Gazebo 里的 DiffDrive 插件）
 glionbot_base_controller:
   ros__parameters:
-    use_sim_time: true
+    use_sim_time: false
+    use_stamped_vel: false
     
     # 车轮关节名称 (必须数组格式，可以支持4轮/6轮，这里是两轮)
     left_wheel_names: ["left_wheel_joint"]
@@ -40,7 +41,6 @@ glionbot_base_controller:
     
     # 消息类型兼容
     # 设为 false 表示接收标准的 geometry_msgs/Twist (teleop_twist_keyboard 的默认格式)
-    use_stamped_vel: false      
 
     # 动力学限制 (搬运并细化你之前的加速限制)
     linear:

@@ -54,7 +54,10 @@ def generate_launch_description():
     robot_state_publisher_node = Node(
         package="robot_state_publisher",
         executable="robot_state_publisher",
-        parameters=[{"robot_description": robot_description}],
+        parameters=[
+            {"robot_description": robot_description},
+            # {"use_sim_time": True},
+        ],
     )
 
     # 1. 通过 IncludeLaunchDescription 包含 Gazebo Harmonic 的启动文件
@@ -65,7 +68,7 @@ def generate_launch_description():
         # Gazebo Harmonic 使用 gz_args 来传递参数
         # -r 表示启动后直接运行（不暂停）
         # -v 4 表示输出详细的 verbose 级别日志
-        launch_arguments={"gz_args": ["-r -v 4 ", default_world_path]}.items(),
+        launch_arguments={"gz_args": ["-r ", default_world_path]}.items(),
     )
 
     # 2. 请求 Gazebo Harmonic 加载机器人
@@ -77,6 +80,12 @@ def generate_launch_description():
             "/robot_description",
             "-name",
             robot_name_in_model,  # Harmonic 中指定实体名称的参数是 -name
+            "-x",
+            "-1.0",
+            "-y",
+            "2.0",
+            "-z",
+            "0.0",
         ],
         output="screen",
     )
@@ -97,9 +106,9 @@ def generate_launch_description():
             # 1. 桥接时钟 (Gazebo -> ROS 2) - 必不可少！让 ROS 2 节点使用仿真时间
             "/clock@rosgraph_msgs/msg/Clock[gz.msgs.Clock",
             # 2. 桥接控制指令 (ROS 2 -> Gazebo) - 假设你的插件监听此话题
-            "/cmd_vel@geometry_msgs/msg/Twist]gz.msgs.Twist",
-            # 3. 桥接里程计 (Gazebo -> ROS 2)
-            "/odom@nav_msgs/msg/Odometry[gz.msgs.Odometry",
+            # "/cmd_vel@geometry_msgs/msg/Twist]gz.msgs.Twist",
+            # # 3. 桥接里程计 (Gazebo -> ROS 2)
+            # "/odom@nav_msgs/msg/Odometry[gz.msgs.Odometry",
             # 4. 桥接关节状态 (Gazebo -> ROS 2)
             "/joint_states@sensor_msgs/msg/JointState[gz.msgs.Model",
             # 5. 桥接 TF 树 (Gazebo -> ROS 2)
@@ -149,6 +158,16 @@ def generate_launch_description():
         )
     )
 
+    dispaly_launch = IncludeLaunchDescription(
+        PythonLaunchDescriptionSource(
+            os.path.join(
+                get_package_share_directory("glionbot_description"),
+                "launch",
+                "display_robot.launch.py",
+            )
+        )
+    )
+
     return LaunchDescription(
         [
             action_declare_arg_mode_path,
@@ -159,5 +178,6 @@ def generate_launch_description():
             bridge_node,
             delay_joint_state_broadcaster_after_spawn,
             delay_base_controller_after_joint_state_broadcaster,
+            dispaly_launch,
         ]
     )

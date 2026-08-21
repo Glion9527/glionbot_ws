@@ -1,7 +1,4 @@
-import launch
-
 from launch import LaunchDescription
-
 # 参数声明与获取-----------------
 from launch.actions import DeclareLaunchArgument
 from launch_ros.parameter_descriptions import ParameterValue
@@ -66,9 +63,9 @@ def generate_launch_description():
 
     return LaunchDescription(
         [
-            action_declare_arg_mode_path,
-            joint_state_publisher_node,
-            robot_state_publisher_node,
+            # action_declare_arg_mode_path,
+            # joint_state_publisher_node,
+            # robot_state_publisher_node,
             rviz_node,
         ]
     )

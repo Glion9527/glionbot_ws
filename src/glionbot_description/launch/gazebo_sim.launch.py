@@ -31,13 +31,14 @@ from launch.event_handlers import OnProcessExit
 
 def generate_launch_description():
     # 获取默认路径
+    world_file = "turtlebot3_house.world"
     robot_name_in_model = "glionbot"
     urdf_tutorial_path = get_package_share_directory("glionbot_description")
     default_model_path = os.path.join(
         urdf_tutorial_path, "urdf", "glionbot", "glionbot.urdf.xacro"
     )
     default_world_path = os.path.join(
-        urdf_tutorial_path, "world", "turtlebot3_world.world"
+        urdf_tutorial_path, "world", world_file
     )
     # 为launch声明参数
     action_declare_arg_mode_path = DeclareLaunchArgument(
@@ -79,11 +80,11 @@ def generate_launch_description():
             "-topic",
             "/robot_description",
             "-name",
-            robot_name_in_model,  # Harmonic 中指定实体名称的参数是 -name
+            robot_name_in_model,
             "-x",
-            "-1.0",
+            "-4.0",
             "-y",
-            "2.0",
+            "4.0",
             "-z",
             "0.0",
         ],

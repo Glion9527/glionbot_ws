@@ -5,6 +5,7 @@ controller_manager:
     use_sim_time: true    # 仿真环境下必须为 true，让控制器使用 Gazebo 的时间
 
     # 声明要加载的两个控制器及其类型
+    # 会自动扫描所有的状态接口，读取并通过话题/joint_states发布
     joint_state_broadcaster:
       type: joint_state_broadcaster/JointStateBroadcaster
 
